@@ -16,11 +16,16 @@ Start:
     di
     ld sp, $FFFE
 
+    ld a, [rLCDC]
+    bit 7, a
+    jr z, LCDOff
+
 WaitForVBlank:
     ld a, [rLY]
     cp 144
     jr c, WaitForVBlank
 
+LCDOff:
     xor a
     ld [rLCDC], a
 
@@ -37,7 +42,7 @@ WaitForVBlank:
     xor a
     ld [rSCY], a
     ld [rSCX], a
-    ld a, %11100100
+    ld a, %00011011
     ld [rBGP], a
     ld a, %10010001
     ld [rLCDC], a

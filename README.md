@@ -6,8 +6,9 @@ Game Boy game written in Assembly based on the Dungeon World RPG.
 
 The RGBDS source in `src/main.asm` starts a ROM, converts the image in
 `Images/plashscreen.png` to the Game Boy's four-shade palette, and displays it
-as a full-screen background. The generated tile and map data is in
-`src/splash_data.inc`.
+as a full-screen background. Startup supports emulators with the boot ROM
+skipped as well as normal boot-ROM startup. The generated tile and map data is
+in `src/splash_data.inc`.
 
 With RGBDS (`rgbasm`, `rgblink`, and `rgbfix`) available on `PATH`, build the
 ROM from the repository root in PowerShell:
