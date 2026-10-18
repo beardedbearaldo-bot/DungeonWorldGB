@@ -1,0 +1,30 @@
+## Build output
+/build/
+/dist/
+/obj/
+*.o
+*.d
+
+## RGBDS and ROM build artifacts
+*.gb
+*.gbc
+*.pocket
+*.map
+*.sym
+*.noi
+*.lst
+
+## Emulator saves and state
+*.sav
+*.srm
+*.rtc
+*.state
+*.state[0-9]
+
+## Editor and operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
