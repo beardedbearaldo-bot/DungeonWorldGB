@@ -1,63 +1,61 @@
-DEF rLCDC EQU $FF40
-DEF rBGP  EQU $FF47
-DEF rLY   EQU $FF44
-DEF rSCY  EQU $FF42
-DEF rSCX  EQU $FF43
-DEF VRAM_START EQU $8000
-DEF BG_MAP     EQU $9800
+INCLUDE "src/hardware.inc"
 
-SECTION "Cartridge Header", ROM0[$0100]
-    nop
-    jp Start
-    ds $0150 - @, 0
+SECTION "Header", ROM0[$100]
 
-SECTION "Boot", ROM0[$0150]
-Start:
-    di
-    ld sp, $FFFE
+	jp EntryPoint
 
-    ld a, [rLCDC]
-    bit 7, a
-    jr z, LCDOff
+	ds $150 - @, 0 ; Make room for the header
 
-WaitForVBlank:
-    ld a, [rLY]
-    cp 144
-    jr c, WaitForVBlank
+EntryPoint:
+	; Shut down audio circuitry
+	ld a, 0
+	ld [rNR52], a
 
-LCDOff:
-    xor a
-    ld [rLCDC], a
+	; Do not turn the LCD off outside of VBlank
+WaitVBlank:
+	ld a, [rLY]
+	cp 144
+	jr c, WaitVBlank
 
-    ld hl, SplashTiles
-    ld de, VRAM_START
-    ld bc, SplashTilesEnd - SplashTiles
-    call CopyBytes
+	; Turn the LCD off
+	ld a, 0
+	ld [rLCDC], a
 
-    ld hl, SplashTilemap
-    ld de, BG_MAP
-    ld bc, SplashTilemapEnd - SplashTilemap
-    call CopyBytes
+	; Copy the tile data
+	ld de, SplashTiles
+	ld hl, $9000
+	ld bc, SplashTiles.End - SplashTiles
+CopyTiles:
+	ld a, [de]
+	ld [hli], a
+	inc de
+	dec bc
+	ld a, b
+	or a, c
+	jr nz, CopyTiles
 
-    xor a
-    ld [rSCY], a
-    ld [rSCX], a
-    ld a, %00011011
-    ld [rBGP], a
-    ld a, %10010001
-    ld [rLCDC], a
+	; Copy the tilemap
+	ld de, SplashTilemap
+	ld hl, $9800
+	ld bc, SplashTilemap.End - SplashTilemap
+CopyTilemap:
+	ld a, [de]
+	ld [hli], a
+	inc de
+	dec bc
+	ld a, b
+	or a, c
+	jr nz, CopyTilemap
 
-Idle:
-    jr Idle
+	; Turn the LCD on
+	ld a, LCDC_ON | LCDC_BG_ON
+	ld [rLCDC], a
 
-CopyBytes:
-    ld a, [hli]
-    ld [de], a
-    inc de
-    dec bc
-    ld a, b
-    or c
-    jr nz, CopyBytes
-    ret
+	; During the first (blank) frame, initialize display registers
+	ld a, %11100100
+	ld [rBGP], a
+
+Done:
+	jr Done
 
 INCLUDE "src/splash_data.inc"
